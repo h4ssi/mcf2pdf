@@ -42,9 +42,10 @@ import ar.com.hjg.pngj.chunks.PngMetadata;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifDirectory;
+import com.drew.metadata.exif.ExifDirectoryBase;
 
 /**
  * Utility class for working with images in the context of the mcf2pdf project.
@@ -104,21 +105,22 @@ public final class ImageUtil {
 		try {
 			Metadata md = ImageMetadataReader.readMetadata(imageFile);
 
-			ExifDirectory ed = (ExifDirectory)md.getDirectory(ExifDirectory.class);
-
-			if (ed != null) {
-				if (ed.containsTag(ExifDirectory.TAG_ORIENTATION)) {
-					int o = ed.getInt(ExifDirectory.TAG_ORIENTATION);
-					switch (o) {
-					case 3:
-						return 180;
-					case 6:
-						return 90;
-					case 8:
-						return 270;
+			for (ExifDirectoryBase ed : md.getDirectoriesOfType(ExifDirectoryBase.class)) {
+				if (ed != null) {
+					if (ed.containsTag(ExifDirectoryBase.TAG_ORIENTATION)) {
+						int o = ed.getInt(ExifDirectoryBase.TAG_ORIENTATION);
+						switch (o) {
+						case 3:
+							return 180;
+						case 6:
+							return 90;
+						case 8:
+							return 270;
+						}
 					}
 				}
 			}
+
 			return 0;
 		} catch (ImageProcessingException e) {
 			throw new IOException(e);
